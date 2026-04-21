@@ -12,9 +12,9 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 import os
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = 'django-insecure-healthcare-capstone-secret-key-change-in-production'
+SECRET_KEY = SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-key")
 DEBUG = False
-ALLOWED_HOSTS = ['*']  # later restrict if needed
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
 INSTALLED_APPS = [
  'django.contrib.admin',
  'django.contrib.auth',
