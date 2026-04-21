@@ -1,0 +1,1 @@
+web: gunicorn healthcare_dashboard.wsgi

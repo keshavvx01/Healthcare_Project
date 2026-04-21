@@ -1,0 +1,162 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Chat History - Healthcare Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .conversation-card {
+        border-left: 4px solid #007bff;
+        transition: transform 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+    }
+
+    .conversation-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .conversation-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    .message-preview {
+        color: #6c757d;
+        font-size: 0.95rem;
+        margin-top: 8px;
+        max-height: 3em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6c757d;
+    }
+
+    .empty-state h3 {
+        color: #495057;
+        margin-bottom: 15px;
+    }
+
+    .conversation-count {
+        display: inline-block;
+        background: #007bff;
+        color: white;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: bold;
+    }
+
+    .filter-badge {
+        display: inline-block;
+        background: #f8f9fa;
+        padding: 8px 15px;
+        border-radius: 4px;
+        margin-right: 10px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .filter-badge:hover {
+        background: #e9ecef;
+    }
+
+    .filter-badge.active {
+        background: #007bff;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card sticky-top">
+                <div class="card-body">
+                    <h4 class="card-title">Chat History</h4>
+                    <p class="text-muted small">Your conversations</p>
+                    
+                    <div class="mt-4">
+                        <p class="small">
+                            <strong>Total Conversations:</strong>
+                            <span class="conversation-count">{{ conversations.count }}</span>
+                        </p>
+                    </div>
+
+                    <a href="{% url 'chatbot:chatbot_home' %}" class="btn btn-primary btn-block mt-3">
+                        💬 New Conversation
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <h1 class="mb-4">📜 Your Chat History</h1>
+
+            {% if conversations %}
+                <p class="text-muted mb-4">You have {{ conversations.count }} conversation{{ conversations.count|pluralize }}.</p>
+
+                <div class="row">
+                    {% for conversation in conversations %}
+                    <div class="col-md-6 mb-4">
+                        <a href="{% url 'chatbot:conversation_detail' conversation.id %}" style="text-decoration: none; color: inherit;">
+                            <div class="card conversation-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        Conversation #{{ conversation.id }}
+                                    </h5>
+                                    
+                                    <div class="conversation-meta">
+                                        <span>
+                                            <i class="far fa-calendar"></i>
+                                            {{ conversation.created_at|date:"M d, Y" }}
+                                        </span>
+                                        <span class="conversation-count">
+                                            {{ conversation.messages.count }} messages
+                                        </span>
+                                    </div>
+
+                                    {% if conversation.get_last_message %}
+                                        <div class="message-preview">
+                                            <strong>Last message:</strong> 
+                                            {{ conversation.get_last_message.content|truncatewords:15 }}
+                                        </div>
+                                    {% endif %}
+
+                                    <div class="mt-3">
+                                        <small class="text-muted">
+                                            Last updated: {{ conversation.updated_at|timesince }} ago
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+
+            {% else %}
+                <div class="card">
+                    <div class="empty-state">
+                        <h3>💬 No Conversations Yet</h3>
+                        <p>You haven't started any conversations with our health chatbot.</p>
+                        <a href="{% url 'chatbot:chatbot_home' %}" class="btn btn-primary">
+                            Start Your First Conversation
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,251 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Conversation Details - Healthcare Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .message {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        word-wrap: break-word;
+    }
+
+    .message.user {
+        background: #007bff;
+        color: white;
+        margin-left: 15%;
+        border-bottom-right-radius: 2px;
+    }
+
+    .message.assistant {
+        background: #e9ecef;
+        color: #333;
+        margin-right: 15%;
+        border-left: 4px solid #28a745;
+        border-bottom-left-radius: 2px;
+    }
+
+    .message.emergency {
+        background: #fff3cd;
+        color: #856404;
+        border-left: 4px solid #dc3545;
+        margin-right: 15%;
+    }
+
+    .message-timestamp {
+        font-size: 0.75rem;
+        opacity: 0.7;
+        margin-top: 5px;
+    }
+
+    .message-content {
+        line-height: 1.5;
+    }
+
+    .message-content ul, .message-content ol {
+        margin: 10px 0;
+        padding-left: 20px;
+    }
+
+    .message-content li {
+        margin: 5px 0;
+    }
+
+    .urgency-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 3px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        margin-left: 10px;
+    }
+
+    .urgency-emergency {
+        background: #dc3545;
+        color: white;
+    }
+
+    .urgency-high {
+        background: #fd7e14;
+        color: white;
+    }
+
+    .urgency-medium {
+        background: #ffc107;
+        color: #333;
+    }
+
+    .urgency-low {
+        background: #28a745;
+        color: white;
+    }
+
+    .conversation-header {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .conversation-meta {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 20px;
+    }
+
+    .meta-item {
+        text-align: center;
+    }
+
+    .meta-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-bottom: 5px;
+    }
+
+    .meta-value {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #007bff;
+    }
+
+    .messages-container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
+    .back-button {
+        margin-bottom: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .message.user {
+            margin-left: 10%;
+        }
+
+        .message.assistant {
+            margin-right: 10%;
+        }
+
+        .conversation-meta {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="back-button">
+        <a href="{% url 'chatbot:chat_history' %}" class="btn btn-outline-secondary">
+            ← Back to Chat History
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card sticky-top">
+                <div class="card-body">
+                    <h4 class="card-title">Conversation Info</h4>
+                    
+                    <div class="mt-3">
+                        <p class="small">
+                            <strong>ID:</strong> #{{ conversation.id }}
+                        </p>
+                        <p class="small">
+                            <strong>Created:</strong><br>
+                            {{ conversation.created_at|date:"M d, Y H:i" }}
+                        </p>
+                        <p class="small">
+                            <strong>Messages:</strong><br>
+                            {{ messages.count }}
+                        </p>
+                        <p class="small">
+                            <strong>Status:</strong><br>
+                            <span class="badge badge-{% if conversation.is_active %}success{% else %}secondary{% endif %}">
+                                {% if conversation.is_active %}Active{% else %}Archived{% endif %}
+                            </span>
+                        </p>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{% url 'chatbot:chatbot_home' %}" class="btn btn-primary btn-block mb-2">
+                            💬 New Conversation
+                        </a>
+                        <a href="{% url 'chatbot:chat_history' %}" class="btn btn-outline-secondary btn-block">
+                            📜 View All Conversations
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="conversation-header">
+                <h2 class="mb-3">📝 Conversation #{{ conversation.id }}</h2>
+                <div class="conversation-meta">
+                    <div class="meta-item">
+                        <div class="meta-label">Created Date</div>
+                        <div class="meta-value">{{ conversation.created_at|date:"M d, Y" }}</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Total Messages</div>
+                        <div class="meta-value">{{ messages.count }}</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Duration</div>
+                        <div class="meta-value">{{ conversation.updated_at|timesince:conversation.created_at }}</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Last Updated</div>
+                        <div class="meta-value">{{ conversation.updated_at|timesince }} ago</div>
+                    </div>
+                </div>
+            </div>
+
+            {% if messages %}
+                <h4 class="mb-3">💬 Messages</h4>
+                <div class="messages-container">
+                    {% for message in messages %}
+                        <div class="message {% if message.message_type == 'user' %}user{% elif message.urgency_level == 'emergency' %}emergency{% else %}assistant{% endif %}" 
+                             data-message-id="{{ message.id }}" 
+                             data-urgency="{{ message.urgency_level }}">
+                            <div class="message-content">
+                                {{ message.content|linebreaks }}
+                            </div>
+                            <div class="message-timestamp">
+                                {{ message.timestamp|date:"M d, H:i" }}
+                                {% if message.urgency_level %}
+                                    <span class="urgency-badge urgency-{{ message.urgency_level }}">
+                                        {{ message.get_urgency_level_display }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <strong>No messages in this conversation.</strong>
+                </div>
+            {% endif %}
+
+            <div class="mt-4">
+                <a href="{% url 'chatbot:chatbot_home' %}" class="btn btn-primary">
+                    💬 Start New Conversation
+                </a>
+                <a href="{% url 'chatbot:chat_history' %}" class="btn btn-outline-secondary">
+                    📜 Back to History
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

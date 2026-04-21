@@ -1,0 +1,51 @@
+/* Custom overrides for HealthCare Portal */
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+/* Form controls global styling */
+.form-control, .form-select {
+ border-radius: 8px;
+ border: 1px solid #dee2e6;
+ padding: 9px 13px;
+ transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-control:focus, .form-select:focus {
+ border-color: #0d6efd;
+ box-shadow: 0 0 0 3px rgba(13,110,253,0.12);
+}
+/* Badge status colors */
+.badge-status-scheduled { background: #0dcaf0; color: #000; }
+.badge-status-confirmed { background: #198754; color: #fff; }
+.badge-status-completed { background: #6c757d; color: #fff; }
+.badge-status-cancelled { background: #dc3545; color: #fff; }
+.badge-status-no_show { background: #ffc107; color: #000; }
+/* Alert auto-dismiss fade */
+.alert { animation: fadeInDown 0.4s ease; }
+@keyframes fadeInDown {
+ from { opacity: 0; transform: translateY(-10px); }
+ to { opacity: 1; transform: translateY(0); }
+}
+/* Table hover row highlight */
+.table-hover tbody tr:hover { background: #f0f7ff; }
+/* Sidebar active indicator */
+.sidebar .nav-link.active {
+ border-left: 3px solid #0d6efd;
+ padding-left: 17px;
+}
+/* Stat cards hover lift */
+.stat-card {
+ transition: transform 0.2s, box-shadow 0.2s;
+ border-radius: 12px;
+ padding: 20px;
+ color: white;
+}
+.stat-card:hover {
+ transform: translateY(-3px);
+ box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+/* Low stock / expired row highlights */
+.low-stock { background-color: #fff8e1 !important; }
+.expired { background-color: #fdecea !important; }
+/* Print-friendly prescription */
+@media print {
+ .sidebar, .topbar, .btn, nav { display: none !important; }
+ .main-content { margin-left: 0 !important; }
+}

@@ -1,0 +1,48 @@
+{% extends 'base/base.html' %}
+{% block title %}Add Medical Record{% endblock %}
+{% block page_title %}Add Medical Record{% endblock %}
+{% block content %}
+<div class="card" style="max-width:800px;margin:auto;">
+ <div class="card-header py-3 px-4"><i class="fas fa-notes-medical text-info me2"></i>Add Medical Record for <strong>{{ patient }}</strong></div>
+ <div class="card-body p-4">
+ <form method="post">
+ {% csrf_token %}
+ <div class="row g-3">
+ <div class="col-md-6">
+ <label class="form-label fw-semibold">Record Date *</label>
+ <input type="date" name="record_date" class="form-control" required>
+ </div>
+ <div class="col-md-6">
+ <label class="form-label fw-semibold">Doctor Name</label>
+ <input type="text" name="doctor_name" class="form-control">
+ </div>
+ <div class="col-12">
+ <label class="form-label fw-semibold">Diagnosis *</label>
+ <textarea name="diagnosis" class="form-control" rows="3"
+required></textarea>
+ </div>
+ <div class="col-md-6">
+ <label class="form-label fw-semibold">Symptoms</label>
+ <textarea name="symptoms" class="form-control" rows="3"></textarea>
+ </div>
+ <div class="col-md-6">
+ <label class="form-label fw-semibold">Treatment</label>
+ <textarea name="treatment" class="form-control" rows="3"></textarea>
+ </div>
+ <div class="col-md-6">
+ <label class="form-label fw-semibold">Prescription</label>
+ <textarea name="prescription" class="form-control" rows="3"></textarea>
+ </div>
+ <div class="col-md-6">
+ <label class="form-label fw-semibold">Notes</label>
+ <textarea name="notes" class="form-control" rows="3"></textarea>
+ </div>
+ </div>
+ <div class="d-flex gap-2 mt-4">
+ <button type="submit" class="btn btn-info text-white"><i class="fas fa-save me2"></i>Save Record</button>
+ <a href="{% url 'patient_detail' patient.pk %}" class="btn btn-outline-secondary">Cancel</a>
+ </div>
+ </form>
+ </div>
+</div>
+{% endblock %}

@@ -1,0 +1,144 @@
+{% extends 'base/base.html' %}
+{% block title %}Dashboard - HealthCare Portal{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block content %}
+<div class="row g-4 mb-4">
+ <div class="col-md-3">
+ <div class="stat-card" style="background:linear-gradient(135deg,#0d6efd,#0a58ca)">
+ <div class="d-flex justify-content-between align-items-start">
+ <div>
+ <div class="stat-value">{{ total_patients }}</div>
+ <div class="stat-label">Total Patients</div>
+ </div>
+ <div class="stat-icon"><i class="fas fa-users"></i></div>
+ </div>
+ <div class="mt-3"><a href="{% url 'patient_list' %}" class="text-white text-decoration-none small">View All <i class="fas fa-arrow-right ms-1"></i></a></div>
+ </div>
+ </div>
+ <div class="col-md-3">
+ <div class="stat-card" style="background:linear-gradient(135deg,#198754,#146c43)">
+ <div class="d-flex justify-content-between align-items-start">
+ <div>
+ <div class="stat-value">{{ total_doctors }}</div>
+ <div class="stat-label">Active Doctors</div>
+ </div>
+ <div class="stat-icon"><i class="fas fa-user-md"></i></div>
+ </div>
+ <div class="mt-3"><a href="{% url 'doctor_list' %}" class="text-white textdecoration-none small">View All <i class="fas fa-arrow-right ms-1"></i></a></div>
+ </div>
+ </div>
+ <div class="col-md-3">
+ <div class="stat-card" style="background:linear-gradient(135deg,#ffc107,#e0a800)">
+ <div class="d-flex justify-content-between align-items-start">
+ <div>
+ <div class="stat-value">{{ total_appointments }}</div>
+ <div class="stat-label">Appointments</div>
+ </div>
+ <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
+ </div>
+ <div class="mt-3"><a href="{% url 'appointment_list' %}" class="text-dark text-decoration-none small">View All <i class="fas fa-arrow-right ms-1"></i></a></div>
+ </div>
+ </div>
+ <div class="col-md-3">
+ <div class="stat-card" style="background:linear-gradient(135deg,#dc3545,#b02a37)">
+ <div class="d-flex justify-content-between align-items-start">
+ <div>
+ <div class="stat-value">{{ total_medicines }}</div>
+ <div class="stat-label">Medicines</div>
+ </div>
+ <div class="stat-icon"><i class="fas fa-pills"></i></div>
+ </div>
+ <div class="mt-3"><a href="{% url 'medicine_list' %}" class="text-white text-decoration-none small">View All <i class="fas fa-arrow-right ms-1"></i></a></div>
+ </div>
+ </div>
+</div>
+<div class="row g-4">
+ <div class="col-md-7">
+ <div class="card">
+ <div class="card-header d-flex justify-content-between align-items-center py-3 px-4">
+ <span><i class="fas fa-calendar-alt text-primary me-2"></i>Recent
+Appointments</span>
+ <a href="{% url 'appointment_create' %}" class="btn btn-sm btn-primary"><i
+class="fas fa-plus me-1"></i>Book New</a>
+ </div>
+ <div class="card-body p-0">
+ <div class="table-responsive">
+ <table class="table table-hover mb-0">
+
+<thead><tr><th>Patient</th><th>Doctor</th><th>Date</th><th>Status</th></tr></thead>
+ <tbody>
+ {% for appt in recent_appointments %}
+ <tr>
+ <td><a href="{% url 'appointment_detail' appt.pk %}" class="text-decoration-none fw-semibold">{{ appt.patient }}</a></td>
+ <td>{{ appt.doctor }}</td>
+ <td>{{ appt.appointment_date }}</td>
+ <td><span class="badge badge-status-{{ appt.status }}">{{
+appt.get_status_display }}</span></td>
+ </tr>
+ {% empty %}
+ <tr><td colspan="4" class="text-center text-muted py-4">No appointments
+yet.</td></tr>
+ {% endfor %}
+ </tbody>
+ </table>
+ </div>
+ </div>
+ </div>
+ </div>
+ <div class="col-md-5">
+ <div class="card">
+ <div class="card-header d-flex justify-content-between align-items-center py-3 px-
+4">
+ <span><i class="fas fa-users text-success me-2"></i>Recent Patients</span>
+ <a href="{% url 'patient_create' %}" class="btn btn-sm btn-success"><i class="fas
+fa-plus me-1"></i>Add New</a>
+ </div>
+ <div class="card-body p-0">
+ <div class="table-responsive">
+ <table class="table table-hover mb-0">
+ <thead><tr><th>Name</th><th>Blood
+Group</th><th>Phone</th></tr></thead>
+ <tbody>
+ {% for p in recent_patients %}
+ <tr>
+ <td><a href="{% url 'patient_detail' p.pk %}" class="text-decoration-none
+fw-semibold">{{ p }}</a></td>
+ <td><span class="badge bg-danger">{{ p.blood_group|default:"N/A"
+}}</span></td>
+ <td>{{ p.phone }}</td>
+ </tr>
+ {% empty %}
+ <tr><td colspan="3" class="text-center text-muted py-4">No patients
+yet.</td></tr>
+ {% endfor %}
+ </tbody>
+ </table>
+ </div>
+ </div>
+ </div>
+ </div>
+</div>
+<div class="row g-4 mt-1">
+ <div class="col-md-12">
+ <div class="card">
+ <div class="card-header py-3 px-4"><i class="fas fa-bolt text-warning me-2"></i>Quick Actions</div>
+ <div class="card-body">
+ <div class="d-flex flex-wrap gap-3">
+ <a href="{% url 'patient_create' %}" class="btn btn-outline-primary"><i
+class="fas fa-user-plus me-2"></i>New Patient</a>
+ <a href="{% url 'doctor_create' %}" class="btn btn-outline-success"><i
+class="fas fa-plus me-2"></i>Add Doctor</a>
+ <a href="{% url 'appointment_create' %}" class="btn btn-outline-warning"><i
+class="fas fa-calendar-plus me-2"></i>Book Appointment</a>
+ <a href="{% url 'today_appointments' %}" class="btn btn-outline-info"><i
+class="fas fa-calendar-day me-2"></i>Today's Schedule</a>
+ <a href="{% url 'dispense_medicine' %}" class="btn btn-outline-danger"><i
+class="fas fa-prescription-bottle me-2"></i>Dispense Medicine</a>
+ <a href="{% url 'medicine_create' %}" class="btn btn-outline-secondary"><i
+class="fas fa-pills me-2"></i>Add Medicine</a>
+ </div>
+ </div>
+ </div>
+ </div>
+</div>
+{% endblock %}

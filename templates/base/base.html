@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>{% block title %}HealthCare Portal{% endblock %}</title>
+ <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+rel="stylesheet">
+ <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+rel="stylesheet">
+ <style>
+ :root {
+ --primary: #0d6efd;
+ --sidebar-bg: #1a2634;
+ --sidebar-width: 260px;
+ }
+ body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
+ .sidebar {
+ position: fixed; top: 0; left: 0; height: 100vh;
+ width: var(--sidebar-width); background: var(--sidebar-bg);
+ z-index: 1000; overflow-y: auto; transition: all 0.3s;
+ }
+ .sidebar-brand {
+ padding: 20px; background: #0d6efd;
+ color: white; font-size: 1.2rem; font-weight: 700;
+ display: flex; align-items: center; gap: 10px;
+ }
+ .sidebar-brand i { font-size: 1.5rem; }
+ .nav-section { padding: 10px 15px 5px; font-size: 0.7rem; color: #6c7a8a; texttransform: uppercase; letter-spacing: 1px; margin-top: 10px; }
+ .sidebar .nav-link {
+ color: #a8b5c0; padding: 10px 20px; border-radius: 8px; margin: 2px 8px;
+ display: flex; align-items: center; gap: 10px; font-size: 0.9rem; transition: all 0.2s;
+ }
+ .sidebar .nav-link:hover, .sidebar .nav-link.active {
+ background: rgba(13,110,253,0.15); color: #fff;
+ }
+ .sidebar .nav-link i { width: 20px; text-align: center; }
+ .main-content { margin-left: var(--sidebar-width); min-height: 100vh; }
+ .topbar {
+ background: #fff; padding: 12px 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+ display: flex; justify-content: space-between; align-items: center; position: sticky; top:
+0; z-index: 999;
+ }
+ .topbar-title { font-weight: 600; color: #1a2634; font-size: 1.1rem; }
+ .page-content { padding: 24px; }
+ .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+ .card-header { background: #fff; border-bottom: 1px solid #f0f4f8; border-radius: 12px
+12px 0 0 !important; font-weight: 600; }
+ .stat-card { border-radius: 12px; padding: 20px; color: white; }
+ .stat-card .stat-icon { font-size: 2.5rem; opacity: 0.8; }
+ .stat-card .stat-value { font-size: 2rem; font-weight: 700; }
+ .stat-card .stat-label { opacity: 0.85; font-size: 0.9rem; }
+ .badge-status-scheduled { background: #0dcaf0; }
+ .badge-status-confirmed { background: #198754; }
+ .badge-status-completed { background: #6c757d; }
+ .badge-status-cancelled { background: #dc3545; }
+ .badge-status-no_show { background: #ffc107; color: #000; }
+ .table th { font-weight: 600; background: #f8f9fa; font-size: 0.85rem; text-transform:
+uppercase; letter-spacing: 0.5px; color: #6c757d; }
+ .btn-primary { background: #0d6efd; border: none; }
+ .low-stock { background: #fff3cd; }
+ .expired { background: #f8d7da; }
+ @media (max-width: 768px) {
+ .sidebar { transform: translateX(-100%); }
+ .main-content { margin-left: 0; }
+ }
+ </style>
+ {% block extra_css %}{% endblock %}
+</head>
+<body>
+{% if user.is_authenticated %}
+<div class="sidebar">
+ <div class="sidebar-brand">
+ <i class="fas fa-heartbeat"></i>
+ <span>HealthCare</span>
+ </div>
+ <nav class="mt-2">
+ <div class="nav-section">Main</div>
+ <a href="{% url 'dashboard' %}" class="nav-link {% if
+request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+ <i class="fas fa-tachometer-alt"></i> Dashboard
+ </a>
+ <div class="nav-section">Patients</div>
+ <a href="{% url 'patient_list' %}" 
+class="nav-link {% if request.resolver_match.url_name and 'patient' in request.resolver_match.url_name %}active{% endif %}">
+ <i class="fas fa-users"></i> All Patients
+ </a>
+ <a href="{% url 'patient_create' %}" class="nav-link">
+ <i class="fas fa-user-plus"></i> Add Patient
+ </a>
+ <div class="nav-section">Doctors</div>
+<a href="{% url 'doctor_list' %}" 
+class="nav-link {% if request.resolver_match.url_name and 'doctor' in request.resolver_match.url_name %}active{% endif %}">
+ <i class="fas fa-user-md"></i> All Doctors
+ </a>
+ <a href="{% url 'doctor_create' %}" class="nav-link">
+ <i class="fas fa-plus-circle"></i> Add Doctor
+ </a>
+ <a href="{% url 'specialization_list' %}" class="nav-link">
+ <i class="fas fa-stethoscope"></i> Specializations
+ </a>
+ <div class="nav-section">Appointments</div>
+ <a href="{% url 'appointment_list' %}" class="nav-link {% if request.resolver_match.url_name and 'appointment' in request.resolver_match.url_name %}active{% endif %}">
+ <i class="fas fa-calendar-alt"></i> All Appointments
+ </a>
+ <a href="{% url 'today_appointments' %}" class="nav-link">
+ <i class="fas fa-calendar-day"></i> Today's Schedule
+ </a>
+ <a href="{% url 'appointment_create' %}" class="nav-link">
+ <i class="fas fa-plus-circle"></i> Book Appointment
+ </a>
+ <div class="nav-section">Pharmacy</div>
+ <a href="{% url 'pharmacy_dashboard' %}" class="nav-link">
+ <i class="fas fa-pills"></i> Pharmacy
+ </a>
+ <a href="{% url 'medicine_list' %}" class="nav-link">
+ <i class="fas fa-capsules"></i> Medicines
+ </a>
+ <a href="{% url 'dispense_medicine' %}" class="nav-link">
+ <i class="fas fa-prescription-bottle"></i> Dispense
+ </a>
+ <div class="nav-section">Health Assistant</div>
+ <a href="{% url 'chatbot:chatbot_home' %}" class="nav-link {% if request.resolver_match.app_name == 'chatbot' %}active{% endif %}">
+ <i class="fas fa-robot"></i> Chat Assistant
+ </a>
+ <a href="{% url 'chatbot:symptom_checker' %}" class="nav-link">
+ <i class="fas fa-search"></i> Symptom Checker
+ </a>
+ <a href="{% url 'chatbot:health_resources' %}" class="nav-link">
+ <i class="fas fa-info-circle"></i> Resources
+ </a>
+ {% if user.is_authenticated %}
+ <a href="{% url 'chatbot:chat_history' %}" class="nav-link">
+ <i class="fas fa-history"></i> Chat History
+ </a>
+ {% endif %}
+ <div class="nav-section">Account</div>
+ <a href="{% url 'profile' %}" class="nav-link">
+ <i class="fas fa-user-cog"></i> My Profile
+ </a>
+ <a href="{% url 'logout' %}" class="nav-link text-danger">
+ <i class="fas fa-sign-out-alt"></i>
+ </a>
+ </nav>
+</div>
+<div class="main-content">
+ <div class="topbar">
+ <span class="topbar-title">{% block page_title %}HealthCare Portal{% endblock %}</span>
+ <div class="d-flex align-items-center gap-3">
+ <span class="text-muted small"><i class="fas fa-user me-1"></i>{{ user.get_full_name|default:user.username }}</span>
+ <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-danger"><i class="fas fa-sign-out-alt"></i></a>
+ </div>
+ </div>
+ <div class="page-content">
+ {% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+{% if user.is_authenticated %}
+    <!-- navbar / sidebar / dashboard layout -->
+{% endif %}
+
+{% block content %}{% endblock %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

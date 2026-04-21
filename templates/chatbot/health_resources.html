@@ -1,0 +1,440 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Health Resources - Healthcare Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .resource-card {
+        border-top: 3px solid #007bff;
+        transition: transform 0.2s, box-shadow 0.2s;
+        height: 100%;
+    }
+
+    .resource-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+
+    .resource-card h5 {
+        color: #007bff;
+        margin-top: 15px;
+    }
+
+    .emergency-section {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+    }
+
+    .emergency-contact {
+        background: white;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .emergency-contact .country {
+        font-weight: bold;
+        color: #dc3545;
+    }
+
+    .emergency-contact .number {
+        font-size: 1.3rem;
+        color: #007bff;
+        font-weight: bold;
+        font-family: monospace;
+    }
+
+    .hotline-card {
+        background: #e7f3ff;
+        border-left: 4px solid #007bff;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+    }
+
+    .hotline-card .name {
+        font-weight: bold;
+        color: #007bff;
+    }
+
+    .hotline-card .number {
+        color: #dc3545;
+        font-weight: bold;
+        font-family: monospace;
+    }
+
+    .hotline-card .description {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+
+    .symptom-guide {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .symptom-guide h6 {
+        color: #dc3545;
+        margin-bottom: 10px;
+    }
+
+    .symptom-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 10px;
+    }
+
+    .symptom-item {
+        background: white;
+        padding: 15px;
+        border-radius: 4px;
+        border-left: 3px solid #dc3545;
+    }
+
+    .symptom-item strong {
+        color: #dc3545;
+    }
+
+    .tips-section {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .tips-section h5 {
+        color: #28a745;
+        border-bottom: 2px solid #28a745;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+    }
+
+    .tips-section ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .tips-section li {
+        padding: 10px 0;
+        padding-left: 30px;
+        position: relative;
+    }
+
+    .tips-section li:before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: #28a745;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+
+    .sidebar-nav {
+        position: sticky;
+        top: 20px;
+    }
+
+    .sidebar-nav ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .sidebar-nav li {
+        margin-bottom: 10px;
+    }
+
+    .sidebar-nav a {
+        display: block;
+        padding: 10px 15px;
+        background: #f8f9fa;
+        border-radius: 4px;
+        text-decoration: none;
+        color: #007bff;
+        transition: background 0.2s;
+    }
+
+    .sidebar-nav a:hover {
+        background: #e9ecef;
+        color: #0056b3;
+    }
+
+    @media (max-width: 768px) {
+        .symptom-list {
+            grid-template-columns: 1fr;
+        }
+
+        .emergency-contact {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .emergency-contact .number {
+            margin-top: 10px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <!-- Sidebar Navigation -->
+        <div class="col-md-3 mb-4">
+            <div class="card sidebar-nav">
+                <div class="card-body">
+                    <h5 class="card-title">Quick Links</h5>
+                    <ul>
+                        <li><a href="#emergency">🚨 Emergency Numbers</a></li>
+                        <li><a href="#hotlines">📞 Crisis Hotlines</a></li>
+                        <li><a href="#when-urgent">⚠️ When Urgent Care</a></li>
+                        <li><a href="#first-aid">🩹 First Aid Tips</a></li>
+                        <li><a href="#wellness">💪 Wellness Tips</a></li>
+                        <li><a href="#medication">💊 Medication Safety</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title">Need Help?</h5>
+                    <p class="small">Use our chatbot for personalized guidance.</p>
+                    <a href="{% url 'chatbot:chatbot_home' %}" class="btn btn-primary btn-sm btn-block">
+                        💬 Chat with Assistant
+                    </a>
+                    <a href="{% url 'chatbot:symptom_checker' %}" class="btn btn-outline-primary btn-sm btn-block mt-2">
+                        🔍 Symptom Checker
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <h1 class="mb-4">📚 Health Resources & Information</h1>
+
+            <!-- Emergency Numbers Section -->
+            <section id="emergency" class="mb-5">
+                <h2 class="mb-3">🚨 Emergency Numbers</h2>
+                <div class="emergency-section">
+                    <p class="mb-4">
+                        <strong>In case of life-threatening emergencies, call your local emergency number immediately.</strong>
+                    </p>
+                    {% for country, number in emergency_numbers.items %}
+                    <div class="emergency-contact">
+                        <span class="country">{{ country }}</span>
+                        <span class="number">{{ number }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- Crisis Hotlines -->
+            <section id="hotlines" class="mb-5">
+                <h2 class="mb-3">📞 Support Hotlines</h2>
+                {% for hotline in hotlines %}
+                <div class="hotline-card">
+                    <div class="name">{{ hotline.name }}</div>
+                    <div class="number">{{ hotline.number }}</div>
+                    <div class="description">{{ hotline.description }}</div>
+                </div>
+                {% endfor %}
+            </section>
+
+            <!-- When to Seek Urgent Care -->
+            <section id="when-urgent" class="mb-5">
+                <h2 class="mb-3">⚠️ When to Seek Urgent Care</h2>
+                <div class="symptom-guide">
+                    <h6>Seek Urgent Care (ASAP) if you experience:</h6>
+                    <div class="symptom-list">
+                        <div class="symptom-item">
+                            <strong>Difficulty Breathing</strong>
+                            <p>Shortness of breath, wheezing, or labored breathing</p>
+                        </div>
+                        <div class="symptom-item">
+                            <strong>Chest Pain</strong>
+                            <p>Pressure, pain, or discomfort in chest</p>
+                        </div>
+                        <div class="symptom-item">
+                            <strong>Severe Injuries</strong>
+                            <p>Deep cuts, fractures, or significant trauma</p>
+                        </div>
+                        <div class="symptom-item">
+                            <strong>Sudden Weakness</strong>
+                            <p>One-sided weakness or numbness</p>
+                        </div>
+                        <div class="symptom-item">
+                            <strong>Confusion/Altered Mental Status</strong>
+                            <p>Disorientation or unusual behavior</p>
+                        </div>
+                        <div class="symptom-item">
+                            <strong>Severe Allergic Reaction</strong>
+                            <p>Swelling, difficulty breathing, or severe rash</p>
+                        </div>
+                        <div class="symptom-item">
+                            <strong>Severe Abdominal Pain</strong>
+                            <p>Sudden, intense pain with vomiting</p>
+                        </div>
+                        <div class="symptom-item">
+                            <strong>High Fever with Stiff Neck</strong>
+                            <p>May indicate meningitis</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-danger mt-3" role="alert">
+                    <strong>🚨 CALL 911 IMMEDIATELY if:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Difficulty breathing or choking</li>
+                        <li>Severe chest pain or pressure</li>
+                        <li>Loss of consciousness</li>
+                        <li>Severe bleeding</li>
+                        <li>Signs of stroke (face drooping, arm weakness, speech difficulty)</li>
+                        <li>Poisoning or overdose</li>
+                        <li>Any life-threatening emergency</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- First Aid Tips -->
+            <section id="first-aid" class="mb-5">
+                <h2 class="mb-3">🩹 Basic First Aid Tips</h2>
+                
+                <div class="tips-section">
+                    <h5>For Minor Cuts & Wounds</h5>
+                    <ul>
+                        <li>Wash the wound with clean water</li>
+                        <li>Apply direct pressure with a clean cloth if bleeding</li>
+                        <li>Apply antiseptic or antibiotic ointment</li>
+                        <li>Cover with a clean bandage</li>
+                        <li>Change bandage daily</li>
+                        <li>Watch for signs of infection</li>
+                    </ul>
+                </div>
+
+                <div class="tips-section">
+                    <h5>For Burns</h5>
+                    <ul>
+                        <li>Cool the burn with cool (not cold) water for 10-20 minutes</li>
+                        <li>Remove jewelry or constrictive items</li>
+                        <li>Apply antibiotic ointment</li>
+                        <li>Cover with a clean gauze bandage</li>
+                        <li>Take over-the-counter pain reliever if needed</li>
+                        <li>Don't apply ice directly to skin</li>
+                    </ul>
+                </div>
+
+                <div class="tips-section">
+                    <h5>For Sprains & Strains</h5>
+                    <ul>
+                        <li><strong>RICE Method:</strong></li>
+                        <li><strong>Rest</strong> - Avoid activity that causes pain</li>
+                        <li><strong>Ice</strong> - Apply ice for 15-20 minutes, several times daily</li>
+                        <li><strong>Compression</strong> - Wrap with elastic bandage</li>
+                        <li><strong>Elevation</strong> - Raise the injured limb</li>
+                        <li>Over-the-counter pain relievers may help</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Wellness Tips -->
+            <section id="wellness" class="mb-5">
+                <h2 class="mb-3">💪 Wellness & Prevention</h2>
+                
+                <div class="tips-section">
+                    <h5>Healthy Lifestyle Habits</h5>
+                    <ul>
+                        <li>Get 7-9 hours of quality sleep daily</li>
+                        <li>Exercise at least 150 minutes per week</li>
+                        <li>Eat a balanced diet with fruits, vegetables, and whole grains</li>
+                        <li>Stay hydrated - drink plenty of water throughout the day</li>
+                        <li>Limit alcohol consumption</li>
+                        <li>Don't smoke - it damages your health</li>
+                        <li>Manage stress through meditation or relaxation techniques</li>
+                    </ul>
+                </div>
+
+                <div class="tips-section">
+                    <h5>Preventive Health Measures</h5>
+                    <ul>
+                        <li>Get recommended vaccinations</li>
+                        <li>Maintain regular check-ups with your healthcare provider</li>
+                        <li>Practice good hand hygiene - wash frequently</li>
+                        <li>Stay updated on health screenings</li>
+                        <li>Manage chronic conditions carefully</li>
+                        <li>Maintain a healthy weight</li>
+                        <li>Monitor blood pressure and cholesterol regularly</li>
+                    </ul>
+                </div>
+
+                <div class="tips-section">
+                    <h5>Mental Health</h5>
+                    <ul>
+                        <li>Seek support when feeling overwhelmed</li>
+                        <li>Maintain social connections</li>
+                        <li>Practice self-care and relaxation</li>
+                        <li>Consider professional counseling if needed</li>
+                        <li>Limit social media and screen time</li>
+                        <li>Engage in hobbies and activities you enjoy</li>
+                        <li>Don't hesitate to reach out for mental health support</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Medication Safety -->
+            <section id="medication" class="mb-5">
+                <h2 class="mb-3">💊 Medication Safety</h2>
+                
+                <div class="tips-section">
+                    <h5>Safe Medication Use</h5>
+                    <ul>
+                        <li>Always take medications as prescribed by your doctor</li>
+                        <li>Read all labels and instructions carefully</li>
+                        <li>Keep track of all medications you're taking</li>
+                        <li>Tell your healthcare provider about all medications and supplements</li>
+                        <li>Store medications properly - follow storage instructions</li>
+                        <li>Check expiration dates regularly</li>
+                        <li>Never share medications with others</li>
+                    </ul>
+                </div>
+
+                <div class="tips-section">
+                    <h5>When Taking Medications</h5>
+                    <ul>
+                        <li>Take medications with water unless directed otherwise</li>
+                        <li>Take at the same time each day for consistency</li>
+                        <li>Don't stop taking medications without consulting your doctor</li>
+                        <li>Report any side effects to your healthcare provider</li>
+                        <li>Be aware of potential interactions with other medications</li>
+                        <li>Keep a list of all medications and supplements</li>
+                        <li>Ask about generic alternatives to reduce costs</li>
+                    </ul>
+                </div>
+
+                <div class="alert alert-info mt-3" role="alert">
+                    <strong>💡 Tip:</strong> Keep a medication list with you at all times. 
+                    This helps healthcare providers understand your complete medical situation.
+                </div>
+            </section>
+
+            <!-- Footer with CTA -->
+            <div class="alert alert-primary mt-5" role="alert">
+                <h4>Need Personalized Health Guidance?</h4>
+                <p>Our AI health chatbot is available 24/7 to answer your health questions and provide wellness advice.</p>
+                <a href="{% url 'chatbot:chatbot_home' %}" class="btn btn-primary">
+                    💬 Start Chatting Now
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

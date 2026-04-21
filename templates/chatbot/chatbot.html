@@ -1,0 +1,599 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Health Chatbot - Healthcare Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chatbot-container {
+        display: flex;
+        flex-direction: column;
+        height: 600px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .message {
+        padding: 12px 16px;
+        border-radius: 8px;
+        max-width: 80%;
+        word-wrap: break-word;
+        animation: slideIn 0.3s ease-in;
+    }
+
+    .message.user {
+        align-self: flex-end;
+        background: #007bff;
+        color: white;
+    }
+
+    .message.assistant {
+        align-self: flex-start;
+        background: #e9ecef;
+        color: #333;
+        border-left: 4px solid #28a745;
+    }
+
+    .message.emergency {
+        align-self: flex-start;
+        background: #fff3cd;
+        color: #856404;
+        border-left: 4px solid #dc3545;
+        font-weight: bold;
+    }
+
+    .message.emergency strong {
+        color: #dc3545;
+    }
+
+    .message-timestamp {
+        font-size: 0.75rem;
+        opacity: 0.7;
+        margin-top: 5px;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .message-content {
+        line-height: 1.5;
+    }
+
+    .message-content ul, .message-content ol {
+        margin: 10px 0;
+        padding-left: 20px;
+    }
+
+    .message-content li {
+        margin: 5px 0;
+    }
+
+    .chat-input-area {
+        padding: 15px;
+        background: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .input-group {
+        display: flex;
+        gap: 10px;
+    }
+
+    .chat-input-area textarea {
+        resize: none;
+        border-radius: 4px;
+        border: 1px solid #ced4da;
+        padding: 10px;
+        font-family: inherit;
+    }
+
+    .btn-send {
+        padding: 10px 20px;
+        background: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background 0.3s;
+    }
+
+    .btn-send:hover {
+        background: #218838;
+    }
+
+    .btn-send:disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+    }
+
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #6c757d;
+        padding: 40px 20px;
+        text-align: center;
+    }
+
+    .empty-state h3 {
+        margin-bottom: 15px;
+        color: #495057;
+    }
+
+    .empty-state p {
+        max-width: 400px;
+        margin-bottom: 20px;
+    }
+
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .quick-action-btn {
+        padding: 10px;
+        background: #e9ecef;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 0.9rem;
+    }
+
+    .quick-action-btn:hover {
+        background: #dee2e6;
+        border-color: #adb5bd;
+    }
+
+    .feedback-section {
+        margin-top: 10px;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+
+    .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .urgency-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 3px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        margin-left: 10px;
+    }
+
+    .urgency-emergency {
+        background: #dc3545;
+        color: white;
+    }
+
+    .urgency-high {
+        background: #fd7e14;
+        color: white;
+    }
+
+    .urgency-medium {
+        background: #ffc107;
+        color: #333;
+    }
+
+    .urgency-low {
+        background: #28a745;
+        color: white;
+    }
+
+    .sidebar-tools {
+        margin-bottom: 30px;
+    }
+
+    .sidebar-tools .btn {
+        width: 100%;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .info-box {
+        background: #e7f3ff;
+        border-left: 4px solid #007bff;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+    }
+
+    .info-box h5 {
+        margin-top: 0;
+        color: #007bff;
+    }
+
+    .error-box {
+        background: #f8d7da;
+        border-left: 4px solid #dc3545;
+        padding: 15px;
+        border-radius: 4px;
+        color: #721c24;
+        margin-bottom: 15px;
+    }
+
+    @media (max-width: 768px) {
+        .chatbot-container {
+            height: 450px;
+        }
+
+        .message {
+            max-width: 90%;
+        }
+
+        .quick-actions {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 mb-4">
+            <div class="card sticky-top">
+                <div class="card-body">
+                    <h4 class="card-title">Health Assistant</h4>
+                    <p class="text-muted small">Trusted health information and guidance</p>
+                    
+                    <div class="info-box mt-3">
+                        <h5>⚠️ Important Disclaimer</h5>
+                        <p class="small mb-0">
+                            This chatbot provides <strong>general health information only</strong>.
+                            <br><br>
+                            <strong>NOT a substitute for professional medical advice</strong>.
+                            <br><br>
+                            For medical emergencies, call 911 or visit the ER.
+                        </p>
+                    </div>
+
+                    <div class="sidebar-tools">
+                        <a href="{% url 'chatbot:symptom_checker' %}" class="btn btn-outline-primary btn-sm">
+                            🔍 Symptom Checker
+                        </a>
+                        <a href="{% url 'chatbot:health_resources' %}" class="btn btn-outline-info btn-sm">
+                            📚 Health Resources
+                        </a>
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'chatbot:chat_history' %}" class="btn btn-outline-secondary btn-sm">
+                            📜 Chat History
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <div class="mt-4">
+                        <h6>Quick Tips:</h6>
+                        <ul class="small">
+                            <li>Ask about symptoms</li>
+                            <li>Get wellness advice</li>
+                            <li>Know when to see a doctor</li>
+                            <li>Get emergency guidance</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">💬 Health Chatbot</h5>
+                </div>
+                
+                <div class="chatbot-container">
+                    <!-- Messages Display -->
+                    <div class="chat-messages" id="messagesContainer">
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="message {% if message.message_type == 'user' %}user{% elif message.urgency_level == 'emergency' %}emergency{% else %}assistant{% endif %}" 
+                                     data-message-id="{{ message.id }}" 
+                                     data-urgency="{{ message.urgency_level }}">
+                                    <div class="message-content">
+                                        {{ message.content|linebreaks }}
+                                    </div>
+                                    <div class="message-timestamp">
+                                        {{ message.timestamp|time:"H:i" }}
+                                        {% if message.urgency_level %}
+                                            <span class="urgency-badge urgency-{{ message.urgency_level }}">
+                                                {{ message.get_urgency_level_display }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    {% if message.message_type == 'assistant' %}
+                                    <div class="feedback-section">
+                                        <p class="mb-2">Was this helpful?</p>
+                                        <form method="post" action="{% url 'chatbot:submit_feedback' %}" class="feedback-form">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="message_id" value="{{ message.id }}">
+                                            <div class="btn-group btn-group-sm rating-buttons" role="group">
+                                                <button type="button" class="btn btn-outline-danger rate-btn" data-rating="1" title="Very Unhelpful">😞</button>
+                                                <button type="button" class="btn btn-outline-warning rate-btn" data-rating="2" title="Unhelpful">😐</button>
+                                                <button type="button" class="btn btn-outline-info rate-btn" data-rating="3" title="Neutral">😐</button>
+                                                <button type="button" class="btn btn-outline-primary rate-btn" data-rating="4" title="Helpful">🙂</button>
+                                                <button type="button" class="btn btn-outline-success rate-btn" data-rating="5" title="Very Helpful">😊</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-state">
+                                <h3>👋 Welcome to Health Chat Assistant</h3>
+                                <p>
+                                    I'm here to provide general health information, answer wellness questions, 
+                                    and guide you on when to seek professional medical care.
+                                </p>
+                                <div class="quick-actions">
+                                    <button class="quick-action-btn" onclick="setQuickMessage('I have a fever')">Fever</button>
+                                    <button class="quick-action-btn" onclick="setQuickMessage('I have a cough')">Cough</button>
+                                    <button class="quick-action-btn" onclick="setQuickMessage('I have a headache')">Headache</button>
+                                    <button class="quick-action-btn" onclick="setQuickMessage('General wellness advice')">Wellness</button>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="chat-input-area">
+                        <form id="messageForm" method="post" action="{% url 'chatbot:send_message' %}" class="input-group">
+                            {% csrf_token %}
+                            <textarea 
+                                id="messageInput"
+                                name="message" 
+                                class="form-control" 
+                                rows="3"
+                                placeholder="Ask me about health topics, symptoms, or wellness..."
+                                required
+                                minlength="5"
+                                maxlength="2000"></textarea>
+                            <button type="submit" class="btn-send" id="sendBtn">
+                                <span id="sendBtnText">Send</span>
+                                <span id="sendBtnSpinner" class="loading" style="display: none;"></span>
+                            </button>
+                        </form>
+                        {% if form.message.errors %}
+                        <div class="error-box mt-2">
+                            {{ form.message.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Info -->
+            <div class="mt-3 alert alert-info">
+                <strong>📋 Note:</strong> This chatbot follows strict healthcare guidelines and will never:
+                <ul class="mb-0 mt-2">
+                    <li>Provide diagnoses</li>
+                    <li>Prescribe medications</li>
+                    <li>Replace professional medical consultation</li>
+                </ul>
+                Always consult a licensed healthcare provider for medical advice.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const messagesContainer = document.getElementById('messagesContainer');
+    const messageForm = document.getElementById('messageForm');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const sendBtnText = document.getElementById('sendBtnText');
+    const sendBtnSpinner = document.getElementById('sendBtnSpinner');
+
+    // Auto-scroll to bottom
+    function scrollToBottom() {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Set quick message
+    window.setQuickMessage = function(message) {
+        messageInput.value = message;
+        messageInput.focus();
+        scrollToBottom();
+    };
+
+    // Handle form submission
+    messageForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!messageInput.value.trim()) return;
+
+        const formData = new FormData(messageForm);
+        sendBtn.disabled = true;
+        sendBtnText.style.display = 'none';
+        sendBtnSpinner.style.display = 'inline-block';
+
+        fetch('{% url "chatbot:send_message" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Clear input
+                messageInput.value = '';
+
+                // Display user message
+                const userMsg = createMessageElement(
+                    data.user_message.content,
+                    'user',
+                    data.user_message.timestamp,
+                    null
+                );
+                messagesContainer.appendChild(userMsg);
+
+                // Display assistant message
+                const assistantMsg = createMessageElement(
+                    data.assistant_message.content,
+                    'assistant',
+                    data.assistant_message.timestamp,
+                    data.urgency_level,
+                    data.assistant_message.id
+                );
+                messagesContainer.appendChild(assistantMsg);
+
+                // Remove empty state if present
+                const emptyState = messagesContainer.querySelector('.empty-state');
+                if (emptyState) {
+                    emptyState.remove();
+                }
+
+                scrollToBottom();
+
+                // Show resources if needed
+                if (data.show_resources) {
+                    showResourcesAlert(data.urgency_level);
+                }
+            } else {
+                alert('Error sending message: ' + JSON.stringify(data.errors));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while sending your message.');
+        })
+        .finally(() => {
+            sendBtn.disabled = false;
+            sendBtnText.style.display = 'inline';
+            sendBtnSpinner.style.display = 'none';
+            messageInput.focus();
+        });
+    });
+
+    function createMessageElement(content, type, timestamp, urgency = null, messageId = null) {
+        const div = document.createElement('div');
+        div.className = `message ${type}`;
+        if (urgency === 'emergency') {
+            div.className += ' emergency';
+        }
+        if (messageId) {
+            div.setAttribute('data-message-id', messageId);
+        }
+
+        let html = `<div class="message-content">${escapeHtml(content).replace(/\n/g, '<br>')}</div>`;
+        html += `<div class="message-timestamp">${timestamp}`;
+        
+        if (urgency) {
+            const urgencyClass = `urgency-${urgency}`;
+            const urgencyText = urgency.charAt(0).toUpperCase() + urgency.slice(1);
+            html += ` <span class="urgency-badge ${urgencyClass}">${urgencyText}</span>`;
+        }
+        
+        html += `</div>`;
+
+        if (type === 'assistant' && messageId) {
+            html += `
+            <div class="feedback-section">
+                <p class="mb-2">Was this helpful?</p>
+                <form method="post" action="{% url 'chatbot:submit_feedback' %}" class="feedback-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="message_id" value="${messageId}">
+                    <div class="btn-group btn-group-sm rating-buttons" role="group">
+                        <button type="button" class="btn btn-outline-danger rate-btn" data-rating="1" title="Very Unhelpful">😞</button>
+                        <button type="button" class="btn btn-outline-warning rate-btn" data-rating="2" title="Unhelpful">😐</button>
+                        <button type="button" class="btn btn-outline-info rate-btn" data-rating="3" title="Neutral">😐</button>
+                        <button type="button" class="btn btn-outline-primary rate-btn" data-rating="4" title="Helpful">🙂</button>
+                        <button type="button" class="btn btn-outline-success rate-btn" data-rating="5" title="Very Helpful">😊</button>
+                    </div>
+                </form>
+            </div>
+            `;
+        }
+
+        div.innerHTML = html;
+
+        // Add rating button listeners
+        const ratingButtons = div.querySelectorAll('.rate-btn');
+        ratingButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const rating = this.getAttribute('data-rating');
+                const form = this.closest('.feedback-form');
+                const ratingInput = form.querySelector('input[name="rating"]');
+                
+                // This is a simplified version - you'd need to handle the form submission
+                console.log(`Rating ${rating} submitted`);
+            });
+        });
+
+        return div;
+    }
+
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    function showResourcesAlert(urgency) {
+        if (urgency === 'emergency') {
+            alert('⚠️ EMERGENCY DETECTED\n\nPlease call 911 or your local emergency number immediately.\n\nThis chatbot cannot replace emergency medical care.');
+        } else if (urgency === 'high') {
+            alert('⚠️ URGENT SYMPTOMS DETECTED\n\nPlease contact your healthcare provider soon or visit urgent care.');
+        }
+    }
+
+    // Initial scroll
+    scrollToBottom();
+});
+</script>
+{% endblock %}

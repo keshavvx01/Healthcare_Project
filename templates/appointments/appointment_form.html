@@ -1,0 +1,80 @@
+{% extends 'base/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="card" style="max-width:700px;margin:auto;">
+  <div class="card-header py-3 px-4"><i class="fas fa-calendar-plus text-warning me-2"></i>{{ title }}</div>
+  <div class="card-body p-4">
+    <form method="post">
+      {% csrf_token %}
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Patient *</label>
+          <select name="patient" class="form-select" required>
+            <option value="">Select Patient</option>
+            {% for p in form.fields.patient.queryset %}
+            <option value="{{ p.pk }}" {% if form.patient.value == p.pk|stringformat:"i" %}selected{% endif %}>{{ p }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Doctor *</label>
+          <select name="doctor" class="form-select" required>
+            <option value="">Select Doctor</option>
+            {% for d in form.fields.doctor.queryset %}
+            <option value="{{ d.pk }}" {% if form.doctor.value == d.pk|stringformat:"i" %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Date *</label>
+          <input type="date" name="appointment_date" class="form-control" value="{{ form.appointment_date.value|default:'' }}" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Time *</label>
+          <input type="time" name="appointment_time" class="form-control" value="{{ form.appointment_time.value|default:'' }}" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Type</label>
+          <select name="appointment_type" class="form-select">
+            {% for val,label in form.fields.appointment_type.choices %}
+            <option value="{{ val }}" {% if form.appointment_type.value == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Status</label>
+          <select name="status" class="form-select">
+            {% for val,label in form.fields.status.choices %}
+            <option value="{{ val }}" {% if form.status.value == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Follow-up Date</label>
+          <input type="date" name="follow_up_date" class="form-control" value="{{ form.follow_up_date.value|default:'' }}">
+        </div>
+        <div class="col-12">
+          <label class="form-label fw-semibold">Reason for Visit</label>
+          <textarea name="reason" class="form-control" rows="3">{{ form.reason.value|default:'' }}</textarea>
+        </div>
+        <div class="col-12">
+          <label class="form-label fw-semibold">Notes</label>
+          <textarea name="notes" class="form-control" rows="2">{{ form.notes.value|default:'' }}</textarea>
+        </div>
+      </div>
+      {% if form.errors %}
+      <div class="alert alert-danger mt-3">
+        {% for field, errors in form.errors.items %}
+          {% for e in errors %}<div>{{ field }}: {{ e }}</div>{% endfor %}
+        {% endfor %}
+      </div>
+      {% endif %}
+      <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-warning text-dark"><i class="fas fa-save me-2"></i>Save Appointment</button>
+        <a href="{% url 'appointment_list' %}" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

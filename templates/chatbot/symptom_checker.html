@@ -1,0 +1,293 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Symptom Checker - Healthcare Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .symptom-card {
+        border-left: 4px solid #007bff;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .symptom-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .advice-container {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 30px;
+    }
+
+    .advice-section {
+        margin-bottom: 25px;
+    }
+
+    .advice-section h5 {
+        color: #007bff;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+    }
+
+    .advice-section ul {
+        list-style-type: none;
+        padding-left: 0;
+    }
+
+    .advice-section li {
+        padding: 8px 0;
+        padding-left: 25px;
+        position: relative;
+    }
+
+    .advice-section li:before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: #28a745;
+        font-weight: bold;
+    }
+
+    .warning-section li:before {
+        content: "⚠";
+        color: #dc3545;
+    }
+
+    .form-section {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .disclaimer-box {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+
+    .emergency-badge {
+        background: #dc3545;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-weight: bold;
+        display: inline-block;
+        margin-left: 10px;
+    }
+
+    .symptom-result {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .symptom-title {
+        font-size: 1.5rem;
+        color: #007bff;
+        margin-bottom: 10px;
+    }
+
+    .symptom-severity {
+        display: inline-block;
+        padding: 5px 15px;
+        border-radius: 20px;
+        margin-bottom: 20px;
+    }
+
+    .severity-mild {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .severity-moderate {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .severity-severe {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .contact-info {
+        background: #e7f3ff;
+        border-left: 4px solid #007bff;
+        padding: 15px;
+        border-radius: 4px;
+        margin-top: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .form-section {
+            padding: 20px;
+        }
+
+        .advice-container {
+            padding: 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card sticky-top">
+                <div class="card-body">
+                    <h4 class="card-title">Symptom Checker</h4>
+                    <p class="text-muted small">Quick symptom assessment tool</p>
+                    
+                    <div class="disclaimer-box mt-3">
+                        <h6>⚠️ Disclaimer</h6>
+                        <p class="small mb-0">
+                            This tool provides <strong>general information only</strong> and is NOT a diagnosis.
+                            <br><br>
+                            Always consult a healthcare professional for medical advice.
+                        </p>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{% url 'chatbot:chatbot_home' %}" class="btn btn-outline-primary btn-sm btn-block mb-2">
+                            💬 Chat with Assistant
+                        </a>
+                        <a href="{% url 'chatbot:health_resources' %}" class="btn btn-outline-info btn-sm btn-block">
+                            📚 Health Resources
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="form-section">
+                <h2>🔍 Symptom Assessment</h2>
+                <p class="text-muted">Select your symptom and provide details to get general health information.</p>
+
+                <form method="POST" action="{% url 'chatbot:symptom_checker' %}" class="mt-4">
+                    {% csrf_token %}
+
+                    <div class="form-group mb-3">
+                        <label for="{{ form.symptom.id_for_label }}" class="form-label">
+                            <strong>{{ form.symptom.label }}</strong>
+                        </label>
+                        {{ form.symptom }}
+                        {% if form.symptom.errors %}
+                            <div class="text-danger mt-1">{{ form.symptom.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="{{ form.duration.id_for_label }}" class="form-label">
+                            <strong>{{ form.duration.label }}</strong>
+                        </label>
+                        {{ form.duration }}
+                        {% if form.duration.errors %}
+                            <div class="text-danger mt-1">{{ form.duration.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="{{ form.severity.id_for_label }}" class="form-label">
+                            <strong>{{ form.severity.label }}</strong>
+                        </label>
+                        {{ form.severity }}
+                        {% if form.severity.errors %}
+                            <div class="text-danger mt-1">{{ form.severity.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="{{ form.other_symptoms.id_for_label }}" class="form-label">
+                            <strong>{{ form.other_symptoms.label }}</strong>
+                        </label>
+                        {{ form.other_symptoms }}
+                        {% if form.other_symptoms.errors %}
+                            <div class="text-danger mt-1">{{ form.other_symptoms.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        Get Information →
+                    </button>
+                </form>
+            </div>
+
+            {% if advice %}
+            <div class="advice-container">
+                <div class="symptom-result">
+                    <div class="symptom-title">
+                        {{ advice.symptom }}
+                        {% if advice.severity %}
+                        <span class="symptom-severity severity-{{ advice.severity }}">
+                            {{ advice.severity|upper }}
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <p class="text-muted">
+                        <strong>Description:</strong> {{ advice.description }}
+                    </p>
+
+                    {% if advice.duration %}
+                    <p class="text-muted">
+                        <strong>Duration:</strong> {{ advice.duration }}
+                    </p>
+                    {% endif %}
+
+                    <!-- General Advice -->
+                    <div class="advice-section">
+                        <h5>💡 General Care Tips</h5>
+                        <ul>
+                            {% for tip in advice.advice %}
+                            <li>{{ tip }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <!-- When to See Doctor -->
+                    <div class="advice-section warning-section">
+                        <h5>🏥 When to See a Healthcare Provider</h5>
+                        <ul>
+                            {% for when in advice.when_to_see_doctor %}
+                            <li>{{ when }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    {% if advice.additional_details %}
+                    <div class="contact-info">
+                        <strong>📝 Your Additional Details:</strong>
+                        <p class="mb-0">{{ advice.additional_details }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="alert alert-warning mt-4" role="alert">
+                        <strong>⚠️ Important:</strong> This information is for educational purposes only. 
+                        It is not a diagnosis and should not replace professional medical consultation. 
+                        If you are experiencing severe symptoms, please seek immediate medical attention.
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{% url 'chatbot:chatbot_home' %}" class="btn btn-outline-primary">
+                            💬 Chat with Assistant
+                        </a>
+                        <a href="{% url 'chatbot:symptom_checker' %}" class="btn btn-outline-secondary">
+                            Check Another Symptom
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
