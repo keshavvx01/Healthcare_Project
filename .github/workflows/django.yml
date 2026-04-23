@@ -1,30 +1,60 @@
-name: Django CI/CD
+name: Django CI Pipeline
 
 on:
   push:
-    branches: [ "main", "dev-fixes-Keshav" ]
+    branches: ["main", "dev-fixes-Keshav"]
+  pull_request:
+    branches: ["main"]
 
 jobs:
-  build:
+  ci:
     runs-on: ubuntu-latest
 
+    env:
+      SECRET_KEY: dummysecret
+      DEBUG: "True"
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.10"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
 
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
 
-    - name: Run Django checks
-      run: |
-        python manage.py check
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
-    - name: Run migrations check
-      run: |
-        python manage.py makemigrations --check --dry-run
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # 🔥 Lint step
+      - name: Lint code
+        run: |
+          pip install flake8
+          flake8 .
+
+      # 🔥 Django system check
+      - name: Django check
+        run: python manage.py check
+
+      # 🔥 Migration validation
+      - name: Check migrations
+        run: python manage.py makemigrations --check --dry-run
+
+      # 🔥 Apply migrations
+      - name: Run migrations
+        run: python manage.py migrate
+
+      # 🔥 Run tests
+      - name: Run tests
+        run: python manage.py test
